@@ -24,8 +24,8 @@
  * 
  */
  
-//#define IP_ADR "146.164.80.56"
-#define IP_ADR "192.168.240.143"
+//#define IP_ADR "192.168.240.143"
+#define IP_ADR "146.164.80.56"
 #define PORT 22244
 
 int C = 262, D = 294, E = 330, F = 349, G = 392, A = 440, B = 523, P = 0;
@@ -46,7 +46,6 @@ int pin_luz    = A3;
 
 int pin_bgraphclock = 2;
 int pin_bgraphreset = 3;
-int pin_audio       = 6;
 int pin_cor_r       = 9;
 int pin_cor_g       = 10;
 int pin_cor_b       = 11;
@@ -57,29 +56,16 @@ int val_solo = 0;
 int val_temp = 0;
 int val_luz = 0;
 
-boolean is_playing = true;
-
-int music_index = 0;
-unsigned long music_millis = 0;
-unsigned int music_cycle = 100;
-
-unsigned long pause_millis = 0;
-unsigned int pause_cycle = 1000;
-
-void setup() {
-
-  Serial.begin(9600);
-
-  // 2 YunOSC essential lines:
-  Bridge.begin();
-  osc.begin(IP_ADR, PORT);
-  
+void setup() {  
   pinMode(pin_bgraphclock, OUTPUT);
   pinMode(pin_bgraphreset, OUTPUT);
-  pinMode(pin_audio, OUTPUT);
   pinMode(pin_cor_r, OUTPUT);
   pinMode(pin_cor_g, OUTPUT);
   pinMode(pin_cor_b, OUTPUT);
+  
+  // 2 YunOSC essential lines:
+  Bridge.begin();
+  osc.begin(IP_ADR, PORT);
 }
 
 void loop(){
@@ -95,49 +81,13 @@ void loop(){
     bgraph_clock();
   }
   bgraph_reset();
-
-  // MUSIC
-
-  if(!is_playing && cycleCheck(&pause_millis, pause_cycle) && val_planta < 500){
-    is_playing = true;
-    music_index = 0;
-    music_millis = millis();
-  }
-
-  if(is_playing && cycleCheck(&music_millis, music_cycle)){
-    if(music_index < sizeof(ode) / sizeof(int) - 1){
-      music_index++;
-      if(ode[music_index] != 0){
-        tone(pin_audio,ode[music_index]);
-      } 
-      else {
-        noTone(pin_audio);
-      }
-      music_cycle = tempo[music_index] * (1023 -val_luz);
-    } 
-    else {
-      is_playing = false;
-      pause_millis = millis();
-      noTone(pin_audio);
-    }
-  }
   
-  sendOsc("/hiperbot/valPlantaRaw", val_planta_raw);
   sendOsc("/hiperbot/solo", val_solo);
   sendOsc("/hiperbot/gsr", val_planta);
-  sendOsc("/hiperbot/temperatura", val_temp);
-  sendOsc("/hiperbot/luminosidade", val_luz);
+  sendOsc("/hiperbot/temp", val_temp);
+  sendOsc("/hiperbot/lumin", val_luz);
   
   RGBroutine();
-  Serial.print(val_planta_raw);
-  Serial.print(" ");
-  Serial.print(val_planta);
-  Serial.print(" ");
-  Serial.print(val_solo);
-  Serial.print(" ");
-  Serial.print(val_temp);
-  Serial.print(" ");
-  Serial.println(val_luz);
   delay(100);
 }
 
@@ -158,19 +108,6 @@ void bgraph_reset(){
   delay(1);
   digitalWrite(pin_bgraphreset, LOW);
 }
-
-boolean cycleCheck(unsigned long *lastMillis, unsigned int cycle)
-{
-  unsigned long currentMillis = millis();
-  if(currentMillis - *lastMillis >= cycle)
-  {
-    *lastMillis = currentMillis;
-    return true;
-  }
-  else
-    return false;
-}
-
 
 void RGBroutine()
 {
