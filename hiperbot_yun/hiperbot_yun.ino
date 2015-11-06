@@ -92,8 +92,8 @@ void loop(){
 }
 
 void sendOsc(String addr, int val) {
-  int values[1];
-  values[0] = val;
+  float values[1];
+  values[0] = val/1000.0;
   osc.send(addr, values, 1);
 }
 
@@ -116,22 +116,17 @@ void RGBroutine()
   int grnVal = 0;
   int bluVal = 0;
 
-  if (potVal < 341)
-  {
+  if (potVal < 341) {
     potVal = (potVal * 3) / 4;
     redVal = 256 - potVal;
     grnVal = potVal;
     bluVal = 1;
-  }
-  else if (potVal < 682)
-  {
+  } else if (potVal < 682) {
     potVal = ((potVal - 341) * 3) / 4;
     redVal = 1;
     grnVal = 256 - potVal;
     bluVal = potVal;
-  }
-  else
-  {
+  } else {
     potVal = ((potVal - 683) * 3) / 4;
     redVal = potVal;
     grnVal = 1;
@@ -140,5 +135,4 @@ void RGBroutine()
   analogWrite(pin_cor_r, redVal);
   analogWrite(pin_cor_g, grnVal);
   analogWrite(pin_cor_b, bluVal);
-
 }
