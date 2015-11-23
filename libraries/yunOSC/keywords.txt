@@ -1,3 +1,0 @@
-yunOSC		KEYWORD1
-begin		KEYWORD2
-send		KEYWORD2
